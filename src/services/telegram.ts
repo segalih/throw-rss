@@ -9,6 +9,7 @@ export const sendToTelegram = async (message: string) => {
     if (env.telegram.threadId) {
       await bot.sendMessage(env.telegram.channelId, message, {
         message_thread_id: parseInt(env.telegram.threadId),
+        parse_mode: "Markdown",
       });
     } else {
       await bot.sendMessage(env.telegram.channelId, message);

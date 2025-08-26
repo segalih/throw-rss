@@ -8,19 +8,20 @@ import { News } from "./models/News";
 connectDB().then(() => {
   logger.info("MongoDB connected. Starting cronjob...");
 
-  // async function test() {
-  //   const news = await News.create({
-  //     title: "Test",
-  //     link: "https://example.com",
-  //     description: "Test description",
-  //     source: "Test source",
-  //     sent: false,
-  //   });
-  //   await news.save();
-  // }
+  async function test() {
+    // const news = await News.create({
+    //   title: "Test",
+    //   link: "https://example.com",
+    //   description: "Test description",
+    //   source: "Test source",
+    //   sent: false,
+    // });
+    // await news.save();
+    await fetchAndProcessRSS();
+  }
 
   // // Jalankan test
-  // test();
+  test();
 
   // Jalankan setiap 30 menit (sesuaikan dengan kebutuhan)
   cron.schedule("* * * * *", async () => {
