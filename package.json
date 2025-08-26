@@ -1,0 +1,26 @@
+{
+    "name": "rss-to-telegram",
+    "version": "1.0.0",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "dev:watch": "nodemon --watch src --exec ts-node src/index.ts"
+    },
+    "dependencies": {
+        "axios": "^1.6.2",
+        "dotenv": "^16.3.1",
+        "fast-xml-parser": "^4.3.2",
+        "mongoose": "^8.0.3",
+        "node-telegram-bot-api": "^0.61.0",
+        "puppeteer": "^21.6.0",
+        "winston": "^3.11.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.10.5",
+        "@types/node-telegram-bot-api": "^0.64.10",
+        "nodemon": "^3.0.2",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.3.3"
+    }
+}
