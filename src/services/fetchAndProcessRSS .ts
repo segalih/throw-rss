@@ -6,19 +6,28 @@ import { logger } from "../utils/logger";
 
 export const fetchAndProcessRSS = async () => {
   for (const url of env.rss.urls) {
-    console.log(`Processing RSS from ${url}`);
     try {
       const feed = await fetchRSS(url);
-      const source = feed.link;
-      console.log("feed", feed);
+      const source = feed.rss.channel.title;
+      console.log(source);
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 jam lalu
+
       for (const item of feed.rss.channel.item) {
+        console.log(JSON.stringify(item));
+        const itemPubDate = new Date(item.isoDate || item.pubDate!);
+        if (itemPubDate < oneDayAgo) {
+          logger.info(`Skipping old news: ${item.title} (${item.link})`);
+          continue; // Lewati berita lama
+        }
+
         const newsItem = {
-          title: item.title,
-          link: item.link,
-          pubDate: new Date(item.pubDate),
-          description: item.description,
-          source,
+          title: item.title!,
+          link: item.link!,
+          // pubDate: itemPubDate,
+          description: item.contentSnippet || item.content || item.description!,
+          source: source,
         };
+
         const saved = await saveNews(newsItem);
         if (saved && !saved.sent) {
           await sendToTelegram(
