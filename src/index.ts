@@ -17,14 +17,14 @@ connectDB().then(() => {
     //   sent: false,
     // });
     // await news.save();
-    await fetchAndProcessRSS();
+    // await fetchAndProcessRSS();
   }
 
   // // Jalankan test
   test();
 
   // Jalankan setiap 30 menit (sesuaikan dengan kebutuhan)
-  cron.schedule("* * * * *", async () => {
+  cron.schedule("*/5 * * * *", async () => {
     logger.info("Running RSS fetch cronjob...");
     await fetchAndProcessRSS();
   });
