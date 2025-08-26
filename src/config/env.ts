@@ -8,11 +8,7 @@ export const env = {
     threadId: process.env.TELEGRAM_THREAD_ID,
   },
   db: {
-    host: process.env.DB_HOST!,
-    user: process.env.DB_USER!,
-    password: process.env.DB_PASSWORD!,
-    name: process.env.DB_NAME!,
-    port: process.env.DB_PORT!,
+    uri: process.env.MONGO_URI!,
   },
   rss: {
     urls: process.env.RSS_FEED_URLS!.split(","),
