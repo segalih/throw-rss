@@ -18,10 +18,10 @@ export const fetchAndProcessRSS = async () => {
 
       for (const item of feed.rss.channel.item) {
         const itemPubDate = new Date(item.isoDate || item.pubDate!);
-        if (itemPubDate < oneDayAgo) {
-          logger.info(`Skipping old news: ${item.title} (${item.link})`);
-          continue;
-        }
+        // if (itemPubDate < oneDayAgo) {
+        //   logger.info(`Skipping old news: ${item.title} (${item.link})`);
+        //   continue;
+        // }
 
         const newsItem = {
           title: item.title!,
@@ -44,13 +44,7 @@ export const fetchAndProcessRSS = async () => {
             const message = `
 🚨 *${newsItem.title}*
 
-📝 ${
-              newsItem.description
-                ? newsItem.description.slice(0, 150) + "..."
-                : "Klik link di bawah untuk detail."
-            }
-
-🔗 [Baca Selengkapnya](${newsItem.link})
+📝 ${newsItem.description}
 
 📰 Sumber: ${source}  
 🗓️ ${new Date(item.pubDate).toLocaleString("id-ID", {
@@ -74,7 +68,7 @@ export const fetchAndProcessRSS = async () => {
               err
             );
           }
-        } 
+        }
       }
     } catch (err) {
       logger.error(`Failed to process RSS from ${url}:`, err);

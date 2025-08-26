@@ -17,7 +17,7 @@ connectDB().then(() => {
     //   sent: false,
     // });
     // await news.save();
-    // await fetchAndProcessRSS();
+    await fetchAndProcessRSS();
   }
 
   // // Jalankan test
