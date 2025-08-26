@@ -1,5 +1,5 @@
 import { env } from "../config/env";
-import { fetchRSS } from "./rss"; // Fungsi fetchRSS yang sudah ada
+import { fetchRSS } from "./rss";
 import { saveNews, updateSentStatus } from "./db";
 import { sendToTelegram } from "./telegram";
 import { logger } from "../utils/logger";
@@ -12,6 +12,7 @@ export const fetchAndProcessRSS = async () => {
       if (!feed) {
         continue; // Lewati jika fetchRSS mengembalikan null
       }
+
       const source = feed.rss.channel.title;
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 jam lalu
 
@@ -19,23 +20,62 @@ export const fetchAndProcessRSS = async () => {
         const itemPubDate = new Date(item.isoDate || item.pubDate!);
         if (itemPubDate < oneDayAgo) {
           logger.info(`Skipping old news: ${item.title} (${item.link})`);
-          continue; // Lewati berita lama
+          continue;
         }
 
         const newsItem = {
           title: item.title!,
           link: item.link!,
-          // pubDate: itemPubDate,
-          description: item.contentSnippet || item.content || item.description!,
-          source: source,
+          description: (
+            item.contentSnippet ||
+            item.content ||
+            item.description ||
+            ""
+          )
+            .replace(/<[^>]*>/g, "") // 🔥 hapus semua HTML tags
+            .trim(),
+          source,
         };
 
         const saved = await saveNews(newsItem);
+
         if (saved && !saved.sent) {
-          await sendToTelegram(
-            `📰 *${saved.title}*\n${saved.description}\n[Baca selengkapnya](${saved.link})`
-          );
-          await updateSentStatus(saved.link);
+          try {
+            const message = `
+🚨 *${newsItem.title}*
+
+📝 ${
+              newsItem.description
+                ? newsItem.description.slice(0, 150) + "..."
+                : "Klik link di bawah untuk detail."
+            }
+
+🔗 [Baca Selengkapnya](${newsItem.link})
+
+📰 Sumber: ${source}  
+🗓️ ${new Date(item.pubDate).toLocaleString("id-ID", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              timeZone: "Asia/Jakarta",
+            })};
+
+#Crypto #News #${source.replace(/[^a-zA-Z0-9]/g, "")}
+`;
+
+            await sendToTelegram(message);
+            await updateSentStatus(saved.link);
+          } catch (err) {
+            logger.error(
+              `❌ Gagal kirim Telegram untuk berita: ${saved.title} (${saved.link})`,
+              err
+            );
+          }
+        } else {
+          logger.info(JSON.stringify(saved?.toJSON()));
         }
       }
     } catch (err) {

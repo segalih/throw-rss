@@ -5,7 +5,7 @@ export const saveNews = async (newsItem: any) => {
   try {
     const existing = await News.findOne({ link: newsItem.link });
     if (existing) {
-      return null;
+      return existing;
     }
 
     const news = new News(newsItem);

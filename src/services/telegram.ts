@@ -17,5 +17,6 @@ export const sendToTelegram = async (message: string) => {
     logger.info("Message sent to Telegram");
   } catch (err) {
     logger.error("Failed to send to Telegram:", err);
+    throw err;
   }
 };
