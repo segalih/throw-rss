@@ -74,9 +74,7 @@ export const fetchAndProcessRSS = async () => {
               err
             );
           }
-        } else {
-          logger.info(JSON.stringify(saved?.toJSON()));
-        }
+        } 
       }
     } catch (err) {
       logger.error(`Failed to process RSS from ${url}:`, err);
