@@ -1,8 +1,7 @@
 import cron from "node-cron";
 import { connectDB } from "./config/db";
-import { logger } from "./utils/logger";
 import { fetchAndProcessRSS } from "./services/fetchAndProcessRSS ";
-import { News } from "./models/News";
+import { logger } from "./utils/logger";
 
 // Koneksi ke MongoDB
 connectDB().then(() => {
@@ -20,10 +19,8 @@ connectDB().then(() => {
     await fetchAndProcessRSS();
   }
 
-  // // Jalankan test
   test();
 
-  // Jalankan setiap 30 menit (sesuaikan dengan kebutuhan)
   cron.schedule("*/5 * * * *", async () => {
     logger.info("Running RSS fetch cronjob...");
     await fetchAndProcessRSS();
