@@ -14,15 +14,8 @@ export const fetchAndProcessRSS = async () => {
       }
 
       const source = feed.rss.channel.title;
-      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 jam lalu
 
       for (const item of feed.rss.channel.item) {
-        const itemPubDate = new Date(item.isoDate || item.pubDate!);
-        // if (itemPubDate < oneDayAgo) {
-        //   logger.info(`Skipping old news: ${item.title} (${item.link})`);
-        //   continue;
-        // }
-
         const newsItem = {
           title: item.title!,
           link: item.link!,
@@ -61,6 +54,9 @@ export const fetchAndProcessRSS = async () => {
 `;
 
             await sendToTelegram(message);
+            logger.info(
+              `✅ Berita berhasil dikirim ke Telegram: ${saved.title}`
+            );
             await updateSentStatus(saved.link);
           } catch (err) {
             logger.error(
