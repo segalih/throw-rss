@@ -6,6 +6,8 @@ const bot = new TelegramBot(env.telegram.botToken);
 
 export const sendToTelegram = async (message: string) => {
   try {
+
+    await bot.sendMessage(env.telegram.mainChannelId, message);
     if (env.telegram.threadId) {
       await bot.sendMessage(env.telegram.channelId, message, {
         message_thread_id: parseInt(env.telegram.threadId),

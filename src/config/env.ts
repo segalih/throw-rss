@@ -6,6 +6,7 @@ export const env = {
     botToken: process.env.TELEGRAM_BOT_TOKEN!,
     channelId: process.env.TELEGRAM_CHANNEL_ID!,
     threadId: process.env.TELEGRAM_THREAD_ID,
+    mainChannelId: process.env.TELEGRAM_MAIN_CHANNEL_ID!,
   },
   db: {
     uri: process.env.MONGO_URI!,
