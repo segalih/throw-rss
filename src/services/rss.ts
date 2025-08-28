@@ -16,7 +16,6 @@ export const fetchRSS = async (url: string) => {
     });
     return parser.parse(response.data);
   } catch (err) {
-    logger.warn(`Axios failed for ${url}, trying Puppeteer...`);
     return null;
   }
 };  

@@ -30,7 +30,7 @@ export const fetchAndProcessRSS = async () => {
           source,
         };
 
-        const saved = await saveNews(newsItem);
+        const saved = await saveNews({ ...newsItem, pubDate: item.pubDate });
 
         if (saved && !saved.sent) {
           try {

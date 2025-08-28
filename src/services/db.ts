@@ -8,7 +8,7 @@ export const saveNews = async (newsItem: any) => {
       return existing;
     }
 
-    const news = new News(newsItem);
+    const news = new News({ ...newsItem, pubDate: new Date(newsItem.pubDate) });
     await news.save();
 
     return news;
