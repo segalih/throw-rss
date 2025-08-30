@@ -18,7 +18,7 @@ Aplikasi untuk mengambil berita dari RSS Feed, menyimpannya ke MongoDB, dan meng
 
 - **Node.js** + **TypeScript**
 - **MongoDB** (Mongoose)
-- **Axios** + **Puppeteer** (fetch RSS)
+- **Axios** (fetch RSS)
 - **node-telegram-bot-api** (kirim pesan ke Telegram)
 - **Winston** (logging)
 
@@ -28,6 +28,9 @@ Aplikasi untuk mengambil berita dari RSS Feed, menyimpannya ke MongoDB, dan meng
 
 1. **Clone repository**:
    ```bash
-   git clone <url-repo>
-   cd project-root
+   git clone https://github.com/segalih/throw-rss.git
+   cd throw-rss
+   npm i
+   npm build
+   npm start
    ```
