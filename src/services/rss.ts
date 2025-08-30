@@ -1,7 +1,5 @@
 import axios from "axios";
 import { XMLParser } from "fast-xml-parser";
-import puppeteer from "puppeteer";
-import { logger } from "../utils/logger";
 
 const parser = new XMLParser();
 
