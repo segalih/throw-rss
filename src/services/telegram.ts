@@ -4,24 +4,26 @@ import { logger } from "../utils/logger";
 
 const bot = new TelegramBot(env.telegram.botToken);
 
-export const sendToTelegram = async (message: string) => {
-  try {
+// Default options untuk semua pesan
+const baseOptions: TelegramBot.SendMessageOptions = {
+  parse_mode: "HTML",
+  disable_web_page_preview: true,
+};
 
-    await bot.sendMessage(env.telegram.mainChannelId, message, {
-      parse_mode: "Markdown",
-    });
-    if (env.telegram.threadId) {
-      await bot.sendMessage(env.telegram.channelId, message, {
-        message_thread_id: parseInt(env.telegram.threadId),
-        parse_mode: "Markdown",
-      });
-    } else {
-      await bot.sendMessage(env.telegram.channelId, message, {
-        parse_mode: "Markdown",
-      });
-    }
+export const sendToTelegram = async (message: string): Promise<void> => {
+  try {
+    await bot.sendMessage(env.telegram.mainChannelId, message, baseOptions);
+
+    const options: TelegramBot.SendMessageOptions = {
+      ...baseOptions,
+      ...(env.telegram.threadId
+        ? { message_thread_id: Number(env.telegram.threadId) }
+        : {}),
+    };
+
+    await bot.sendMessage(env.telegram.channelId, message, options);
   } catch (err) {
-    logger.error("Failed to send to Telegram:", err);
+    logger.error("❌ Failed to send to Telegram:", err);
     throw err;
   }
 };

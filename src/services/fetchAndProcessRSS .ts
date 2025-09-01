@@ -3,30 +3,36 @@ import { fetchRSS } from "./rss";
 import { saveNews, updateSentStatus } from "./db";
 import { sendToTelegram } from "./telegram";
 import { logger } from "../utils/logger";
+import he from "he";
+
+// Escape untuk MarkdownV2
+function escapeMarkdownV2(text: string): string {
+  return text
+    .replace(/([_*\[\]()~`>#+\-=|{}.!])/g, "\\$1")
+    .replace(/-/g, "\\-");
+}
 
 export const fetchAndProcessRSS = async () => {
   for (const url of env.rss.urls) {
     console.log(`Processing RSS from ${url}`);
     try {
       const feed = await fetchRSS(url);
-      if (!feed) {
-        continue; // Lewati jika fetchRSS mengembalikan null
-      }
+      if (!feed) continue;
 
       const source = feed.rss.channel.title;
 
       for (const item of feed.rss.channel.item) {
+        // Decode & bersihkan HTML entity
+        const rawTitle = he.decode(item.title || "").trim();
+        const rawDesc = he
+          .decode(item.contentSnippet || item.content || item.description || "")
+          .replace(/<[^>]*>/g, "")
+          .trim();
+
         const newsItem = {
-          title: item.title!,
+          title: rawTitle,
           link: item.link!,
-          description: (
-            item.contentSnippet ||
-            item.content ||
-            item.description ||
-            ""
-          )
-            .replace(/<[^>]*>/g, "") // 🔥 hapus semua HTML tags
-            .trim(),
+          description: rawDesc,
           source,
         };
 
@@ -35,11 +41,13 @@ export const fetchAndProcessRSS = async () => {
         if (saved && !saved.sent) {
           try {
             const message = `
-🚨 *${newsItem.title}*
+🚨 <b>${he.decode(newsItem.title)}</b>
 
-📝 ${newsItem.description}
+📝 ${he.decode(newsItem.description)}
 
-📰 Sumber: ${source}  
+🔗 <a href="${newsItem.link}">Baca selengkapnya</a>
+
+📰 ${he.decode(source)}  
 🗓️ ${new Date(item.pubDate).toLocaleString("id-ID", {
               weekday: "long",
               day: "numeric",
@@ -48,7 +56,7 @@ export const fetchAndProcessRSS = async () => {
               hour: "2-digit",
               minute: "2-digit",
               timeZone: "Asia/Jakarta",
-            })};
+            })}
 
 #Crypto #News #${source.replace(/[^a-zA-Z0-9]/g, "")}
 `;
