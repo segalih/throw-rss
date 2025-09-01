@@ -5,77 +5,82 @@ import { sendToTelegram } from "./telegram";
 import { logger } from "../utils/logger";
 import he from "he";
 
-// Escape untuk MarkdownV2
-function escapeMarkdownV2(text: string): string {
-  return text
-    .replace(/([_*\[\]()~`>#+\-=|{}.!])/g, "\\$1")
-    .replace(/-/g, "\\-");
-}
+const decodeText = (text: string): string => he.decode(text || "").trim();
 
-export const fetchAndProcessRSS = async () => {
+const formatDate = (date: string | Date): string =>
+  new Date(date).toLocaleString("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Jakarta",
+  });
+
+const buildMessage = (news: {
+  title: string;
+  description: string;
+  link: string;
+  source: string;
+  pubDate: string | Date;
+}): string => `
+🚨 <b>${decodeText(news.title)}</b>
+
+📝 ${decodeText(news.description)}
+
+🔗 <a href="${news.link}">Baca selengkapnya</a>
+
+📰 ${decodeText(news.source)}  
+🗓️ ${formatDate(news.pubDate)}
+
+#Crypto #News #${news.source.replace(/[^a-zA-Z0-9]/g, "")}
+`;
+
+const processNewsItem = async (item: any, source: string): Promise<void> => {
+  const newsItem = {
+    title: decodeText(item.title),
+    link: item.link!,
+    description: decodeText(
+      (item.contentSnippet || item.content || item.description || "").replace(
+        /<[^>]*>/g,
+        ""
+      )
+    ),
+    source,
+    pubDate: item.pubDate,
+  };
+
+  const saved = await saveNews(newsItem);
+  if (!saved || saved.sent) return;
+
+  try {
+    const message = buildMessage(newsItem);
+    await sendToTelegram(message);
+
+    logger.info(`✅ Berita berhasil dikirim ke Telegram: ${saved.title}`);
+    await updateSentStatus(saved.link);
+  } catch (err) {
+    logger.error(
+      `❌ Gagal kirim Telegram untuk berita: ${saved.title} (${saved.link})`,
+      err
+    );
+  }
+};
+
+export const fetchAndProcessRSS = async (): Promise<void> => {
   for (const url of env.rss.urls) {
-    console.log(`Processing RSS from ${url}`);
+    logger.info(`🔄 Processing RSS from ${url}`);
     try {
       const feed = await fetchRSS(url);
       if (!feed) continue;
 
       const source = feed.rss.channel.title;
-
       for (const item of feed.rss.channel.item) {
-        // Decode & bersihkan HTML entity
-        const rawTitle = he.decode(item.title || "").trim();
-        const rawDesc = he
-          .decode(item.contentSnippet || item.content || item.description || "")
-          .replace(/<[^>]*>/g, "")
-          .trim();
-
-        const newsItem = {
-          title: rawTitle,
-          link: item.link!,
-          description: rawDesc,
-          source,
-        };
-
-        const saved = await saveNews({ ...newsItem, pubDate: item.pubDate });
-
-        if (saved && !saved.sent) {
-          try {
-            const message = `
-🚨 <b>${he.decode(newsItem.title)}</b>
-
-📝 ${he.decode(newsItem.description)}
-
-🔗 <a href="${newsItem.link}">Baca selengkapnya</a>
-
-📰 ${he.decode(source)}  
-🗓️ ${new Date(item.pubDate).toLocaleString("id-ID", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-              timeZone: "Asia/Jakarta",
-            })}
-
-#Crypto #News #${source.replace(/[^a-zA-Z0-9]/g, "")}
-`;
-
-            await sendToTelegram(message);
-            logger.info(
-              `✅ Berita berhasil dikirim ke Telegram: ${saved.title}`
-            );
-            await updateSentStatus(saved.link);
-          } catch (err) {
-            logger.error(
-              `❌ Gagal kirim Telegram untuk berita: ${saved.title} (${saved.link})`,
-              err
-            );
-          }
-        }
+        await processNewsItem(item, source);
       }
     } catch (err) {
-      logger.error(`Failed to process RSS from ${url}:`, err);
+      logger.error(`❌ Failed to process RSS from ${url}:`, err);
     }
   }
 };
