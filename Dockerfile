@@ -1,5 +1,5 @@
 # ============================
-# Stage 1: Build dependencies
+# Stage 1: Builder
 # ============================
 FROM node:18-alpine AS builder
 
@@ -11,12 +11,11 @@ COPY package*.json ./
 # Install semua dependencies (termasuk devDependencies)
 RUN npm install
 
-# Copy semua source code
+# Copy seluruh source code
 COPY . .
 
-# Build project (jika ada script build, misalnya React/Next.js)
-# Kalau app murni Node.js (tanpa build step), bisa di-skip
-RUN npm run build || echo "skip build step"
+# Compile TypeScript -> output ke /dist
+RUN npm run build
 
 
 # ============================
@@ -32,14 +31,15 @@ COPY package*.json ./
 # Install hanya production dependencies
 RUN npm install --only=production
 
-# Copy hasil build & source yang dibutuhkan
+# Copy hasil build dari builder stage
 COPY --from=builder /usr/src/app/dist ./dist
-COPY --from=builder /usr/src/app/public ./public
-COPY --from=builder /usr/src/app/*.js ./
-COPY --from=builder /usr/src/app/*.json ./
 
-# Expose port
+# Copy file yang dibutuhkan untuk runtime
+COPY --from=builder /usr/src/app/.env ./.env
+COPY --from=builder /usr/src/app/tsconfig.json ./tsconfig.json
+
+# Expose port (sesuai env)
 EXPOSE 3000
 
-# Start dengan npm run start
-CMD ["npm", "run", "start"]
+# Start aplikasi (jalankan hasil compile JS di dist/)
+CMD ["node", "dist/index.js"]
