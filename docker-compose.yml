@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  throw-rss:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production # pakai stage production
+    container_name: throw-rss
+    restart: always
+    ports:
+      - "3000:3000" # sesuaikan dengan PORT di .env kalau beda
+    env_file:
+      - .env
